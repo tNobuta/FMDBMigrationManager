@@ -64,6 +64,7 @@ static NSArray *FMDBClassesConformingToProtocol(Protocol *protocol)
 @property (nonatomic, assign) BOOL shouldCloseOnDealloc;
 @property (nonatomic) NSArray *migrations;
 @property (nonatomic) NSMutableArray *externalMigrations;
+@property (nonatomic, strong) NSString *migrationIdentifier;
 @end
 
 @implementation FMDBMigrationManager
@@ -72,6 +73,12 @@ static NSArray *FMDBClassesConformingToProtocol(Protocol *protocol)
 {
     FMDatabase *database = [FMDatabase databaseWithPath:path];
     return [[self alloc] initWithDatabase:database migrationsBundle:bundle];
+}
+
++ (instancetype)managerWithDatabaseAtPath:(NSString *)path migrationIdentifier:(NSString *)identifier {
+    FMDBMigrationManager *migrationManager = [self managerWithDatabaseAtPath:path migrationsBundle:[NSBundle mainBundle]];
+    migrationManager.migrationIdentifier = identifier;
+    return migrationManager;
 }
 
 + (instancetype)managerWithDatabase:(FMDatabase *)database migrationsBundle:(NSBundle *)bundle
@@ -221,7 +228,14 @@ static NSArray *FMDBClassesConformingToProtocol(Protocol *protocol)
         for (Class migrationClass in conformingClasses) {
             if ([migrationClass isSubclassOfClass:[FMDBFileMigration class]]) continue;
             id<FMDBMigrating> migration = [migrationClass new];
-            [migrations addObject:migration];
+            
+            if (!self.migrationIdentifier || (NSNull *)self.migrationIdentifier == [NSNull null] || [self.migrationIdentifier isEqualToString:@""]) {
+                [migrations addObject:migration];
+            }else {
+                if ([self.migrationIdentifier isEqualToString:[migration migrationIdentifier]]) {
+                    [migrations addObject:migration];
+                }
+            }
         }
     }
     

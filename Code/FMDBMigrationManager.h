@@ -50,6 +50,16 @@
 + (instancetype)managerWithDatabaseAtPath:(NSString *)path migrationsBundle:(NSBundle *)bundle;
 
 /**
+ *  Creates a new migration manager with a given database and migration identifier.
+ *
+ *  @param path  path The path to a database with which to initialize the migration manager.
+ *  @param identifier migration identifier is used to identify which migration instance should be executed.
+ *
+ *  @return A new migration manager.
+ */
++ (instancetype)managerWithDatabaseAtPath:(NSString *)path migrationIdentifier:(NSString *)identifier;
+
+/**
  @abstract Determines whether the receiver will perform a search for dynamically defined migrations. Default: `YES`.
  @discussion When `YES` all classes will be enumerated to search for any that conform to the `FMDBMigrating` protocol.
  */
@@ -196,6 +206,11 @@
 ///-------------------------------------
 /// @name Accessing Migration Properties
 ///-------------------------------------
+
+/**
+ *  @abstract The identifier of the migration.
+ */
+@property (nonatomic, readonly) NSString *migrationIdentifier;
 
 /**
  @abstract The name of the migration.
